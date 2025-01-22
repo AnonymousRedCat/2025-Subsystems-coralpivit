@@ -56,5 +56,9 @@
     "edu.wpi.first.math.proto.*",
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
-  ]
+  ],
+  "extensions.supportVirtualWorkspaces": {
+    "vscjava.vscode-java-debug": true,
+    "redhat.java": true
+  }
 }
