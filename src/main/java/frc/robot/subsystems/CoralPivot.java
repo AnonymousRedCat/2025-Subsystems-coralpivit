@@ -56,5 +56,105 @@ public class CoralPivot extends SubsystemBase {
       SmartDashboard.putBoolean("exception thrown for Coral bottom limit: ", isCoralPivotRetException);
     }
   } 
+// methods start here
+public double getCoralEncoder() {  //gives encoder reading in Revs
+  return coralEncoder.getPosition();
+}
 
-// do methods tomorrow
+public void resetCoralEncoder() {
+  coralEncoder.setPosition(0);
+}
+
+public void stopCoralPivot() {
+coralPivotMotor.set(0);
+}
+
+public boolean isCoralExtLimit() {
+if (isCoralPivotExtException) {
+  return true;
+} else {
+  return CoralExtLimit.get();
+}
+}
+
+public boolean isCoralRetLimit() {
+if (isCoralPivotRetException) {
+  return true;
+} else {
+  return CoralRetLimit.get();
+}
+}
+public boolean isFullyExtended() {
+  boolean aFullExtend;
+  if (getCoralEncoder() <= Constants.coralPivot.CORAL_ENC_REVS_MAX) {  //WAS >=
+    aFullExtend = true;
+  } else {
+    aFullExtend = false;      }
+  return aFullExtend;
+}
+public void setCoralPivotSpeed(double speed) {
+  if (speed <= 0) {  //was >0 but changed since going negative when extending now
+     //TODO make sure elevator speed > 0 when going up
+    if (isCoralExtLimit() || isFullyExtended()) {
+        // if fully extended limit is tripped or cartridge at the maximum desired extension and going out, stop 
+        stopCoralPivot();
+     }  else {
+        // cartridge extending out but fully extended limit is not tripped, go at commanded speed
+       coralPivotMotor.set(speed);
+      }
+ } 
+ else {
+      if (isCoralRetLimit()) {
+        // cartridge retracting and retract limit is tripped, stop and zero encoder
+        stopCoralPivot();
+        resetCoralEncoder();
+      } else {
+        // cartridge retracting but fully retracted limit is not tripped, go at commanded speed
+        coralPivotMotor.set(speed);
+      }
+     }
+}
+
+public double getCoralTiltSpeed() {
+  return coralPivotMotor.get();
+}
+
+//Begin things that may not be relevant
+//these are things that might be useful in the future if we use CANSparkMax PID
+//we are not currently using it
+
+//!!!! SPARKMAX PID STUFF - USE SPARKMAX PID, NOT WPILib PID 
+//**** CHANGED BACK TO USING WPILib PID ****
+//**** due to spurious encoder polarity changes when run multiple autos in a row ****
+/*
+public void setSetpoint(double encoderRevs) {
+  tiltPIDController.setReference(encoderRevs, ControlType.kPosition);
+}
+
+public void setP(double kP) {
+  tiltPIDController.setP(kP);
+}
+
+public void setI(double kI) {
+  tiltPIDController.setI(kI);
+}
+
+public void setD(double kD) {
+  tiltPIDController.setD(kD);
+}
+
+public void setFF(double kFF) {
+  tiltPIDController.setFF(kFF);
+}
+*/
+
+
+@Override
+  public void periodic() {
+    SmartDashboard.putBoolean("Coral Pivot Extend Limit: ", isCoralExtLimit());
+    SmartDashboard.putBoolean("Coral Pivot Retract Limit", isCoralRetLimit());
+    SmartDashboard.putNumber("Coral Pivot Encoder Revolutions ", getCoralEncoder());
+    SmartDashboard.putBoolean("Coral Pivot is fully extended: ", isFullyExtended());
+  }
+
+}
